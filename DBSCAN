@@ -1,0 +1,138 @@
+# Coder :Maryam Najimigoshtasb.
+
+# Importing requierd packages and libraries
+
+import pandas as pd
+import numpy as np
+from pylab import rcParams
+import seaborn as sb
+import matplotlib.pyplot as plt
+import sklearn 
+from sklearn.cluster import DBSCAN
+from collections import Counter
+
+%matplotlib inline 
+rcParams ['figure.figsize']=5,4
+#sb.set_style['whitegrid']
+
+
+# DBSCAN clustring to identify ouliers
+
+df=pd.read_csv(r'C:\Users\Maryam\Downloads\IRIS.csv')
+
+df.head()
+
+data=df.iloc[:,:4]
+
+data.info()
+
+data[:5]
+
+db=DBSCAN(eps=0.8, min_samples=19)
+
+model=db.fit(data)
+
+model
+
+model.labels_
+
+outliers_df=pd.DataFrame(data)
+print(Counter(model.labels_))
+
+print(outliers_df[model.labels_==-1])
+
+sample_core= np.zeros_like(df,dtype=bool)
+
+sample_core[model.labels_!= -1]=True
+
+sample_core
+
+#other way to see the core points
+#db.core_sample_indices_
+#sample_core[db.core_sample_indices_]=True
+#sample_core
+
+# visualzing the clusters 
+we can use any combinations of two variables
+
+fig=plt.figure()
+ax=fig.add_axes([.1,.1,1,1])
+color=model.labels_
+ax.scatter(data.iloc[:,2].values,data.iloc[:,1].values,c=color, s=120,)
+
+
+import matplotlib.pyplot as plt
+
+
+
+plt.figure(figsize=(7,5))
+plt.scatter(data.loc[model.labels_ == 0, 'sepal_length'], data.loc[model.labels_ == 0, 'sepal_width'], s = 120, c = 'pink')
+plt.scatter(data.loc[model.labels_ == 1,'sepal_length'], data.loc[model.labels_ == 1, 'sepal_width'], s = 120, c = 'yellow')
+
+plt.xlabel('sepal_length')
+plt.ylabel('sepal_width')
+plt.title('Clusters of data')
+plt.show()
+
+from sklearn.metrics import silhouette_score
+
+silhouette_score(data, db.fit_predict(data))
+        
+
+# How to imporve the clusters?
+
+# Defining the list of hyperparameters to try
+eps_list=np.arange(start=0.1, stop=0.98, step=0.01)
+min_sample_list=np.arange(start=2, stop=100, step=1)
+ 
+
+# Creating empty data frame to store the silhouette scores for each trials
+silhouette_scores_data=pd.DataFrame()
+ 
+
+for eps_trial in eps_list:
+    for min_sample_trial in min_sample_list:
+        
+        # Generating DBSAN clusters
+        db = DBSCAN(eps=eps_trial, min_samples=min_sample_trial)
+        
+        if(len(np.unique(db.fit_predict(data)))>1):
+            sil_score=silhouette_score(data, db.fit_predict(data))
+        else:
+            continue
+        trial_parameters="eps:" + str(eps_trial.round(1)) +" min_sample :" + str(min_sample_trial)
+        
+        silhouette_scores_data=silhouette_scores_data.append(pd.DataFrame(data=[[sil_score,trial_parameters]], columns=["score", "parameters"]))
+ 
+# Finding out the best hyperparameters with highest Score
+silhouette_scores_data.sort_values(by='score', ascending=False).head(1)
+
+db=DBSCAN(eps=0.9, min_samples=10)
+
+model=db.fit(data)
+
+model.labels_
+
+### we can see that it eliminate the outliers and calcuted the score that is why our score is much better
+
+
+plt.figure(figsize=(7,5))
+plt.scatter(data.loc[model.labels_ == 0, 'sepal_length'], data.loc[model.labels_ == 0, 'sepal_width'], s = 120, c = 'pink')
+plt.scatter(data.loc[model.labels_ == 1,'sepal_length'], data.loc[model.labels_ == 1, 'sepal_width'], s = 120, c = 'yellow')
+
+plt.xlabel('sepal_length')
+plt.ylabel('sepal_width')
+plt.title('Clusters of data')
+plt.show()
+
+fig=plt.figure()
+ax=fig.add_axes([.1,.1,1,1])
+color=model.labels_
+ax.scatter(data.iloc[:,2].values,data.iloc[:,1].values,c=color, s=120)
+
+### in fact if we apply the silhouette_score on the core data which is clustered at the begining we can see the same score
+
+data[model.labels_!= -1]
+
+silhouette_score(data[model.labels_!= -1], db.fit_predict(data[model.labels_!= -1]))
+
