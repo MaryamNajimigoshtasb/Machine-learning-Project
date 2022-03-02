@@ -1,2 +1,2 @@
 # Machine-learning-Project
-Machine learning project 
+In this folder I have put Classification and Regresssion projects which i have done with python data sets are avaliable online .
